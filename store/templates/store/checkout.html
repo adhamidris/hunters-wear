@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="UTF-8">
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <link rel="stylesheet" href="{% static 'store/index.css' %}">
+        <title>Checkout | Hunterswear</title>
+    </head>
+    <body>
+        {{ cart|json_script:"cart-data"}}
+        <script>
+            const cartElement = document.getElementById('cart-data');
+            window.CART_DATA = cartElement ? JSON.parse(cartElement.textContent) : { items: [] };
+        </script>
+
+        <!-- Announcement Bar -->
+        <div class="announcement-bar">
+            <div class="marquee">
+            <div>
+                <span>FREE SHIPPING ON ORDERS OVER 2,000 EGP</span>
+                <span>FREE SHIPPING ON ORDERS OVER 2,000 EGP</span>
+            </div>
+            </div>
+        </div>
+
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="/#products" class="nav-item">Shop All</a>
+                </div>
+                <div class="logo">
+                    <div class="logo-container">
+                        <a href="#" class="logo-text">Hunters</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+
+        <!-- Checkout Section -->
+<section class="checkout-section" style="background: white; padding: 60px 0; min-height: 80vh;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <div class="checkout-header" style="text-align: center; margin-bottom: 50px;">
+            <h1 style="color: #333; font-size: 2.5rem; margin-bottom: 10px;">Checkout</h1>
+            <p style="color: #666; font-size: 1.1rem;">Complete your order</p>
+        </div>
+
+        <div class="checkout-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+            
+            <!-- Order Summary -->
+            <div class="order-summary" style="background: #f8f9fa; padding: 30px; border-radius: 12px; border: 1px solid #e9ecef;">
+                <h2 style="color: #333; margin-bottom: 25px; font-size: 1.5rem; border-bottom: 3px solid #dee2e6; padding-bottom: 10px; text-transform: uppercase; letter-spacing: -1px;">Order Summary</h2>
+                
+                <div id="checkoutCartItems" class="checkout-cart-items">
+                </div>
+
+                <div id="add-more"></div>
+                
+                <div class="order-totals" style="border-top: 2px solid #dee2e6; padding-top: 20px; margin-top: 20px;">
+                    <div class="subtotal" style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem;">
+                        <span>Subtotal:</span>
+                        <span id="checkoutSubtotal">0 EGP</span>
+                    </div>
+                    <div class="delivery" style="display: flex; justify-content: space-between; margin-bottom: 15px; color: #666;">
+                        <span>Delivery:</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="total" style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; color: black; border-top: 1px solid #dee2e6; padding-top: 15px;">
+                        <span>Total:</span>
+                        <span id="checkoutTotal">0 EGP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout Form -->
+            <div class="checkout-form-container" style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 style="color: #333; margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 10px;">Delivery Information</h2>
+                
+                <form id="checkoutForm" method="POST" action="{% url 'place_order' %}" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrfmiddlewaretoken" value="">
+                    
+                    <!-- Name Fields -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="first_name" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Name *</label>
+                            <input type="text" id="first_name" name="first_name" required
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;">
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="01XXXXXXXXX"
+                               style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;">
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-group">
+                        <label for="address" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Full Address *</label>
+                        <textarea id="address" name="address" required rows="3" placeholder="Street address, building number, apartment number"
+                                  style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+
+                    <!-- Area and Landmark -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="area" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Area *</label>
+                            <input type="text" id="area" name="area" placeholder="e.g. Nasr City, Maadi"
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label for="nearest_landmark" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Nearest Landmark (Optional)</label>
+                            <input type="text" id="nearest_landmark" name="nearest_landmark" placeholder="e.g. Cairo Festival Mall"
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;">
+                        </div>
+                    </div>
+
+                    <!-- Hidden field for total amount -->
+                    <input type="hidden" id="total_amount" name="total_amount" value="0">
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="placeOrderBtn" class="checkout-btn">
+                        Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+    </body>
+    <script src="{% static 'store/index.js' %}"></script>
+</html>

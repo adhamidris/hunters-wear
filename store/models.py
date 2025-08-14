@@ -2,13 +2,18 @@ from django.db import models, transaction
 
 # Create your models here.
 
+
+
 class Products(models.Model):
 
     classifications = [
         ('tshirts', 'T Shirts'),
         ('shorts', 'Shorts'),
         ('best-sellers', 'Best Seller'),
+        ('suit', 'Suit'),
+        ('trouser', 'Trouser'),
     ]
+
 
     name = models.CharField(max_length=30, null=True, blank=True)
     price = models.IntegerField(null=True, blank=True)
@@ -19,6 +24,31 @@ class Products(models.Model):
 
     def __str__(self):
         return f"{self.classification} - {self.name} - {self.price}"
+    
+
+class ProductSize(models.Model):
+    SIZE_CHOICES = [
+        ('XS', 'XSmall'),
+        ('S', 'Small'),
+        ('M', 'Medium'),
+        ('L', 'Large'),
+        ('XL', 'XLarge'),
+        ('XXL', 'XXLarge'),
+    ]
+
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='productsizes')
+    size = models.CharField(max_length=3, choices=SIZE_CHOICES)
+    stock_count = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ['product', 'size']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.get_size_display()} ({self.stock_count} in stock)"
+    
+    @property
+    def is_in_stock(self):
+        return self.stock_count > 0
 
 class Order(models.Model):
 
@@ -57,14 +87,24 @@ class Order(models.Model):
                 self.order_number = str(last_num + 1)
         super().save(*args, **kwargs)
 
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    size = models.CharField(max_length=3, blank=True, null=True, choices=[  # ADD this line
+        ('XS', 'XS'),
+        ('S', 'S'),
+        ('M', 'M'),
+        ('L', 'L'),
+        ('XL', 'XL'),
+        ('XXL', 'XXL'),
+    ])
     quantity = models.PositiveIntegerField(default=1)
     price = models.IntegerField()
 
     def __str__(self):
-        return f"{self.quantity} x {self.product}"
+        size_text = f" ({self.get_size_display()})" if self.size else ""
+        return f"{self.quantity} x {self.product}{size_text}"
     
     @property
     def total_price(self):

@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update cart counter on page load
     cartAPI.updateCartCounter();
-    
 
     document.addEventListener('click', async function(e) {
         if (e.target.classList.contains('add-to-cart-btn')) {
@@ -18,11 +17,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const productBox = btn.closest('.product-box');
             const productId = productBox.dataset.productId;
             
+            const sizeSelector = productBox.querySelector('.size-selector');
+            let size = '';
+            if (sizeSelector) {
+                size = sizeSelector.value;
+                if (!size) {
+                    alert('Please select a size first');
+                    return;
+                }
+            }
+            
             if (productId) {
                 
                 btn.innerHTML = 'Adding...';
                 
-                const result = await cartAPI.addToCart(parseInt(productId));
+                const result = await cartAPI.addToCart(parseInt(productId), 1, size); // ADD size parameter
                 
                 if (result && result.ok) {
                     btn.classList.add('added');
@@ -35,6 +44,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     btn.classList.remove('added');
                     btn.innerHTML = '+ Add to Cart';
+                    // ADD: Show error message if provided
+                    if (result && result.error) {
+                        alert(result.error);
+                    }
                 }
             }
         }
@@ -89,14 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
             itemsHTML += `
                 <div class="checkout-cart-item">
                     <img src="${item.image_url || '/static/placeholder.jpg'}" 
-                         alt="${item.name}" class="checkout-item-image">
+                        alt="${item.name}" class="checkout-item-image">
                     <div class="checkout-item-details">
                         <div class="checkout-item-name">${item.name}</div>
+                        ${item.size ? `<div class="checkout-item-size">Size: ${item.size_display || item.size}</div>` : ''} 
                         <div class="checkout-item-meta">
                             <div class="checkout-item-qty">
-                                <button class="qty-btn" onclick="updateCheckoutQuantity(${item.product_id}, -1)" type="button">-</button>
+                                <button class="qty-btn" onclick="updateCheckoutQuantity(${item.product_id}, -1, '${item.size || ''}')" type="button">-</button>
                                 <span class="qty-display">${item.qty}</span>
-                                <button class="qty-btn" onclick="updateCheckoutQuantity(${item.product_id}, 1)" type="button">+</button>
+                                <button class="qty-btn" onclick="updateCheckoutQuantity(${item.product_id}, 1, '${item.size || ''}')" type="button">+</button>
                             </div>
                             <span class="checkout-item-price">${itemTotal} EGP</span>
                         </div>
@@ -209,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Global function for updating quantities in checkout
-    window.updateCheckoutQuantity = async function(productId, change) {
+    window.updateCheckoutQuantity = async function(productId, change, size = '') {
         if (!window.cartAPI) return;
         
         const btn = event.target;
@@ -221,9 +235,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         try {
             if (change > 0) {
-                await window.cartAPI.addToCart(productId, 1);
+                await window.cartAPI.addToCart(productId, 1, size);
             } else {
-                await window.cartAPI.removeFromCart(productId);
+                await window.cartAPI.removeFromCart(productId, size);
             }
             
             // Update will happen automatically via the overridden updateCartCounter
@@ -243,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cart API Class
 class CartAPI {
     constructor() {
-        this.baseURL = '/cart';
         this.cart = window.CART_DATA || { items: [] };
     }
 
@@ -255,14 +268,17 @@ class CartAPI {
         }
 
     // Add item to cart
-    async addToCart(productId, qty = 1) {
+    async addToCart(productId, qty = 1, size = '') { // ADD size parameter
         try {
             const formData = new FormData();
             formData.append('product_id', productId);
             formData.append('qty', qty);
+            if (size) { // ADD: Include size if provided
+                formData.append('size', size);
+            }
             formData.append('csrfmiddlewaretoken', this.getCSRFToken());
 
-            const response = await fetch(`${this.baseURL}/add/`, {
+            const response = await fetch(`/add/`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -279,21 +295,28 @@ class CartAPI {
                 this.updateCartCounter();
                 this.showCartNotification(`Item added to cart!`);
                 return data;
+            } else {
+                // ADD: Return error data for handling
+                return data;
             }
         } catch (error) {
             console.error('Error adding to cart:', error);
             this.showCartNotification('Error adding item to cart', 'error');
+            return { ok: false, error: 'Network error' };
         }
-    }
+}
 
     // Remove from Cart
 
-    async removeFromCart(productId) {
+    async removeFromCart(productId, size = '') { // ADD size parameter
         const formData = new FormData();
         formData.append('product_id', productId);
+        if (size) { // ADD: Include size if provided
+            formData.append('size', size);
+        }
         formData.append('csrfmiddlewaretoken', this.getCSRFToken());
 
-        const response = await fetch(`${this.baseURL}/remove/`, {
+        const response = await fetch(`/remove/`, {
             method: 'POST',
             body: formData,
         });
@@ -478,11 +501,12 @@ class CartModal {
                 <img src="${item.image_url || '/static/placeholder.jpg'}" alt="${item.name}" class="cart-item-image">
                 <div class="cart-item-details">
                     <div class="cart-item-name">${item.name}</div>
+                    ${item.size ? `<div class="cart-item-size">Size: ${item.size_display || item.size}</div>` : ''}
                     <div class="cart-item-price">${item.unit_price} EGP</div>
                     <div class="cart-item-qty">
-                        <button class="qty-btn" onclick="cartModal.updateQuantity(${item.product_id}, -1)">-</button>
+                        <button class="qty-btn" onclick="cartModal.updateQuantity(${item.product_id}, -1, '${item.size || ''}')">-</button>
                         <span>${item.qty}</span>
-                        <button class="qty-btn" onclick="cartModal.updateQuantity(${item.product_id}, 1)">+</button>
+                        <button class="qty-btn" onclick="cartModal.updateQuantity(${item.product_id}, 1, '${item.size || ''}')">+</button>
                     </div>
                 </div>
             </div>
@@ -498,14 +522,13 @@ class CartModal {
         checkoutBtn.style.cursor = 'pointer';
     }
 
-    async updateQuantity(productId, change) {
+    async updateQuantity(productId, change, size = '') {
         if (change > 0) {
-            await this.cartAPI.addToCart(productId, 1);
+            await this.cartAPI.addToCart(productId, 1, size);
         } else {
-            // You'll need to implement remove/decrease endpoint
-            await this.cartAPI.removeFromCart(productId)
+            await this.cartAPI.removeFromCart(productId, size);
         }
         this.cartAPI.updateCartCounter();
-        this.renderCartItems(); // This will automatically update button state
+        this.renderCartItems();
     }
 }

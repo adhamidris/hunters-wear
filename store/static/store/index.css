@@ -10,6 +10,29 @@ body {
     color: #333;
 }
 
+@media (min-width: 992px) {
+    .website-wrapper {
+        display: none !important;
+    }
+
+    .pc-view {
+        background-color: #333 !important;
+        height: 100vh !important;
+        color: #f2f2f2 !important;
+        display: flex;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 600 !important;
+        font-size: larger !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .pc-view {
+        display: none !important;
+    }
+}
+
 .announcement-bar {
     background: #333;
     color: #fff;
@@ -460,7 +483,8 @@ body {
         box-sizing: border-box !important;
         color: rgb(3, 3, 3);
         height: fit-content !important;
-        width: 355px !important;
+        width: 100% !important;
+        max-width: 355px !important;
         overflow: visible !important;
     }
 
@@ -505,41 +529,48 @@ body {
         display: flex;
         flex-direction: row;
         justify-content: space-between !important;
+        align-items: flex-start !important; /* Changed from default to flex-start */
         margin-top: 2px !important;
+        gap: 8px !important; /* Add gap for better spacing */
     }
 
     .product-left {
         margin-top: 0 !important;
         width: 100% !important;
         overflow: visible !important;
-        flex: 0 !important;
-        white-space: nowrap !important;
+        flex: 1 !important; /* Changed from 0 to 1 */
+        white-space: normal !important; /* Changed from nowrap to normal */
+        max-width: 60% !important; /* Add max-width to prevent overlap */
+        padding-right: 10px !important; /* Add padding for spacing */
     }
 
-    .product-right {
-        flex: 1 !important; 
-    }
 
     .product-name {
         margin-top: 0 !important;
         font-size: 1.1rem !important;
+        line-height: 1.2 !important; /* Add line-height for better readability */
+        word-wrap: break-word !important; /* Ensure long words break */
+        hyphens: auto !important; /* Add hyphenation */
     }
 
     .product-right {
-        align-self: flex-end;
-        width: 100% !important;
+        flex: 0 0 auto !important; /* Changed flex property */
+        min-width: 35% !important; /* Ensure minimum width for price area */
+        max-width: 40% !important; /* Set maximum width */
         display: flex !important;
         flex-direction: column !important;
     }
 
     .product-price {
         align-self: flex-end !important;
+        text-align: right !important;
+        width: 100% !important;
     }
 
     .product-compare-price {
         align-self: flex-end !important;
-        text-align: left !important;
-        font-size: 0.9rem !important;
+        text-align: right !important;
+        font-size: 1.1rem !important;
         color: gray;
         text-decoration: line-through black !important;
     }
@@ -649,6 +680,30 @@ body {
         overflow: hidden !important;
         background-color: #333;
         color: white;
+    }
+
+    .index-footer {
+        position: relative !important;
+        height: 100% !important;
+        max-height: 220px !important;
+        overflow: hidden !important;
+        background-color: #333;
+        color: white;   
+    }
+
+    .index-footer-wrap {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between !important;
+        gap: 5px !important;    
+    }
+
+    .rights {
+        text-align: center !important;
+        font-size: 10px;
+        justify-content: flex-start !important;
+        opacity: 0.7 !important;
     }
 
     .footer-wrap {
@@ -879,12 +934,6 @@ body {
 
 }
 
-.product-name {
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-    margin-top: 10px;
-}
 
 .product-price {
     font-weight: 600;
@@ -912,7 +961,9 @@ body {
     height: 100%;
 }
 
-.tshirts-part {
+.tshirts-part,
+.trousers-part,
+.suits-part {
     position: relative;
     width: 100%;
     height: fit-content;
@@ -922,7 +973,9 @@ body {
     align-items: center;
 }
 
-.tshirts-title {
+.tshirts-title,
+.trousers-title,
+.suits-title {
     position: relative;
     text-align: center;
     letter-spacing: -1px;
@@ -933,7 +986,9 @@ body {
     margin-bottom: 20px;
 }
 
-.tshirts-products {
+.tshirts-products,
+.trousers-products,
+.suits-products {
     width: 100%;
     position: relative;
     display: flex;
@@ -1465,4 +1520,118 @@ body {
 .checkout-section input:hover,
 .checkout-section textarea:hover {
     border-color: #000;
+}
+
+/* Size Selection Styling - Mobile Only */
+@media (max-width: 768px) {
+    .size-selection {
+        margin-top: 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        position: relative !important; /* Add positioning context */
+    }
+
+    .size-selector {
+        width: 70% !important;
+        max-width: 150px !important;
+        padding: 6px 10px !important; /* Reduced padding */
+        border: 2px solid #333 !important;
+        border-radius: 4px !important; /* Smaller border radius */
+        background-color: white !important;
+        color: #333 !important;
+        font-size: 0.75rem !important; /* Smaller font size */
+        font-weight: 500 !important; /* Reduced font weight */
+        letter-spacing: -0.3px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-4-4h8l-4 4z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 6px center !important;
+        background-size: 10px !important; /* Smaller arrow */
+        padding-right: 25px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        position: relative !important;
+        z-index: 10 !important; /* Ensure dropdown stays on top */
+    }
+
+    .size-selector:focus {
+        outline: none !important;
+        border-color: #000 !important;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+        transform: scale(1.01) !important; /* Smaller scale */
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' viewBox='0 0 16 16'%3E%3Cpath d='M8 4.5l4 4H4l4-4z'/%3E%3C/svg%3E") !important;
+        z-index: 20 !important; /* Higher z-index when focused */
+    }
+
+    .size-selector:hover {
+        border-color: #000 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Fixed dropdown options styling with smaller text */
+    .size-selector option {
+        padding: 8px 12px !important; /* Reduced padding */
+        background-color: white !important;
+        color: #333 !important;
+        font-weight: 500 !important;
+        font-size: 0.6rem !important; /* Much smaller font size */
+        letter-spacing: -0.2px !important;
+        text-transform: uppercase !important;
+        line-height: 1.2 !important;
+        border: none !important;
+        min-height: auto !important; /* Prevent oversized options */
+        height: auto !important;
+    }
+
+    .size-selector option:disabled {
+        color: #999 !important;
+        background-color: #f8f9fa !important;
+        font-style: italic !important;
+        opacity: 0.6 !important;
+    }
+
+    .size-selector option:hover,
+    .size-selector option:focus {
+        background-color: #333 !important;
+        color: white !important;
+    }
+
+    .size-selector option:checked {
+        background-color: #000 !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    /* Ensure dropdown doesn't overflow container */
+    .product-box {
+        position: relative !important;
+        overflow: visible !important;
+        z-index: 1 !important;
+    }
+
+    .product-box:focus-within {
+        z-index: 100 !important; /* Bring entire product box to front when dropdown is active */
+    }
+
+    /* Custom scrollbar for smaller dropdown */
+    .size-selector::-webkit-scrollbar {
+        width: 4px !important;
+    }
+
+    .size-selector::-webkit-scrollbar-track {
+        background: #f1f1f1 !important;
+        border-radius: 2px !important;
+    }
+
+    .size-selector::-webkit-scrollbar-thumb {
+        background: #333 !important;
+        border-radius: 2px !important;
+    }
+
+    .size-selector::-webkit-scrollbar-thumb:hover {
+        background: #000 !important;
+    }
 }

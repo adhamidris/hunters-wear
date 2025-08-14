@@ -16,6 +16,12 @@
             const cartElement = document.getElementById('cart-data');
             window.CART_DATA = cartElement ? JSON.parse(cartElement.textContent) : { items: [] };
         </script>
+
+        <div class="pc-view">
+            This website is customized for mobile-devices,<br>
+            Please re-visit the website from a mobile device.
+        </div>
+        <div class="website-wrapper">
         <!-- Announcement Bar -->
         <div class="announcement-bar">
             <div class="marquee">
@@ -34,7 +40,7 @@
                 </div>
                 <div class="logo">
                     <div class="logo-container">
-                        <a href="#" class="logo-text">Hunters</a>
+                        <a href="/" class="logo-text">Hunters</a>
                     </div>
                 </div>
                 <div class="nav-right">
@@ -58,145 +64,13 @@
                 </h1>
                 <p class="subtitle">Where street culture meets premium craftsmanship</p>
                 <span class="line-separator"></span>
-                <a href="#" class="shop-now-btn">Shop Now</a>
+                <a href="{% url 'products' %}" class="shop-now-btn">Shop Now</a>
             </div>
         </section>
 
-        <!-- Products Section -->
-        <section id="products" class="products-section">
-            <div class="announcement-bar second-bar">
-            <div class="marquee second-marquee">
-            <div>
-                <span>FREE SHIPPING ON ORDERS OVER 2,000 EGP</span>
-                <span>FREE SHIPPING ON ORDERS OVER 2,000 EGP</span>
-            </div>
-            </div>
-        </div>
-            <div class="header-container">
-                <h1 class="header">our products</h1>
-            </div>
-            <div class="products-wrapper">
 
-                <div class="best-sellers-part">
-                    <h1 class="best-sellers-title">Best Sellers</h1>
-                    <div class="swiper best-sellers-swiper">
-                    <div class="swiper-wrapper best-sellers-products">
-                        {% for product in products %}
-                        {% if product.best_seller %}
-                        <div class="swiper-slide">
-                            <div class="product-box" data-product-id="{{ product.id }}">
-                                <div class="product-image-container">
-                                    <img class="product-img" src="{{ product.image.url }}" alt="{{ product.name }}">
-                                </div>
-                                <div class="product-wrap">
-                                    <div class="product-left">
-                                        <p class="product-name">{{ product.name }}</p>
-
-                                    </div>
-                                    <div class="product-right">
-                                        <p class="product-price">{{ product.price }} EGP</p>
-                                        {% if product.compare_price %}
-                                        <p class="product-compare-price">{{ product.compare_price }}</p>   
-                                        {% endif %}                                     
-                                    </div>
-                                </div>
-                                    <a class="add-to-cart-btn">+ Add to cart</a>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
-                        </div>
-                        </div>
-                <div class="tshirts-part">
-                    <h1 class="tshirts-title">T-Shirts</h1>
-                    <div class="swiper tshirts-swiper">
-                    <div class="swiper-wrapper tshirts-products">
-                        {% for product in products %}
-                        {% if product.classification == 'tshirts'%}
-                        <div class="swiper-slide">
-                            <div class="product-box" data-product-id="{{ product.id }}">
-                                <div class="product-image-container">
-                                    <img class="product-img" src="{{product.image.url}}" alt="{{product.name}}">
-                                </div>
-                                <div class="product-wrap">
-                                    <div class="product-left">
-                                        <p class="product-name">{{product.name}}</p>
-
-                                    </div>
-                                    <div class="product-right">
-                                        <p class="product-price">{{ product.price }} EGP</p>
-                                        {% if product.compare_price %}
-                                        <p class="product-compare-price">{{product.compare_price}}</p>
-                                        {% endif %}                                        
-                                    </div>
-                                </div>
-                                    <a class="add-to-cart-btn">+ Add to cart</a>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
-                        </div>
-                        </div>
-                <div class="shorts-part">
-                    <h1 class="shorts-title">Shorts</h1>
-                    <div class="swiper shorts-swiper">
-                    <div class="swiper-wrapper shorts-products">
-                        {% for product in products %}
-                        {% if product.classification == 'shorts' %}
-                        <div class="swiper-slide">
-                            <div class="product-box" data-product-id="{{ product.id }}">
-                                <div class="product-image-container">
-                                    <img class="product-img" src="{{product.image.url}}">
-                                </div>
-                                <div class="product-wrap">
-                                    <div class="product-left">
-                                        <p class="product-name">{{product.name}}</p>
-                                    </div>
-                                    <div class="product-right">
-                                        <p class="product-price">{{product.price}} EGP</p>
-                                        {% if product.compare_price %}
-                                        <p class="product-compare-price">{{product.compare_price}}</p>
-                                        {% endif %}                                        
-                                    </div>
-                                </div>
-                                    <a class="add-to-cart-btn">+ Add to cart</a>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
-                        </div>
-                        </div>
-    </div>
-    <div class="section-template--20036439671004__wave_new_LbgNdL wave-template--20036439671004__wave_new_LbgNdL" style="background-color:#ffffff;">
-        <div class="section-template--20036439671004__wave_new_LbgNdL-settings">
-            <div class="wave-item-template--20036439671004__wave_new_LbgNdL">
-                <svg class="waves-animated-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none">
-                    <defs>
-                        <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"></path>
-                    </defs>
-                    <g class="wave-parallax1-template--20036439671004__wave_new_LbgNdL">
-                        <use xlink:href="#gentle-wave" x="50" y="3" fill="currentColor"></use>
-                    </g>
-                    <g class="wave-parallax2-template--20036439671004__wave_new_LbgNdL">
-                        <use xlink:href="#gentle-wave" x="50" y="0" fill="currentColor"></use>
-                    </g>
-                    <g class="wave-parallax3-template--20036439671004__wave_new_LbgNdL">
-                        <use xlink:href="#gentle-wave" x="50" y="9" fill="currentColor"></use>
-                    </g>
-                    <g class="wave-parallax4-template--20036439671004__wave_new_LbgNdL">
-                        <use xlink:href="#gentle-wave" x="50" y="6" fill="currentColor"></use>
-                    </g>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-        </section>
-        <footer class="footer">
-            <div class="footer-wrap">
+        <footer class="index-footer">
+            <div class="index-footer-wrap">
                 <div class="footer-upper">
                     <h1 class="footer-title">stay connected</h1>
                     <div class="social-links">
@@ -209,19 +83,7 @@
                     </div>
                 </div>
                 <span class="footer-separator"></span>
-                <div class="footer-lower">
-                    <div class="lower-left">
-                        <p class="links">Navigation</p>
-                        <a class="link">Shop</a>
-                        <a class="link">FAQs</a>
-                    </div>
-                    <div class="lower-right">
-                        <p class="links">About Us</p>
-                        <a class="link">Legal & Privacy</a>
-                        <a class="link">Shipping</a>
-                        <a class="link">Returns</a>
-                    </div>
-                </div>
+                <div class="rights">All Copyrights Reserved to Hunters © 2025</div>
             </div>
         </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/10.3.1/swiper-bundle.min.js"></script>
@@ -340,8 +202,10 @@
 
         
     </script>
-
         
     </body>
     <script src="{% static 'store/index.js' %}"></script>
+        </div>
+
 </html>
+

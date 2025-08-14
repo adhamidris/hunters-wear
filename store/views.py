@@ -4,14 +4,42 @@ from .utils.cart import get_cart, save_cart
 from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction  
-from .models import Products, Order, OrderItem
+from .models import Products, Order, OrderItem, ProductSize
 
 
 def home(request):
+    return render(request, 'store/index.html')
+
+def products(request):
     products = Products.objects.all()
     session_cart = get_cart(request.session)
 
-    return render(request, 'store/index.html', {'products': products, 'cart': session_cart})
+    best_sellers, tshirts, shorts, suits, trousers = [], [], [], [], []
+
+    for p in products:
+        if getattr(p, "best_seller", False) or p.classification == 'best_sellers':
+            best_sellers.append(p)
+
+        if p.classification == 'tshirts':
+            tshirts.append(p)
+
+        if p.classification == 'shorts':
+            shorts.append(p)
+
+        if p.classification == 'suit':
+            suits.append(p)
+
+        if p.classification == 'trouser':
+            trousers.append(p)
+
+    return render(request, 'store/products.html', {
+        'best_sellers': best_sellers,
+        'tshirts': tshirts,
+        'shorts': shorts,
+        'trousers': trousers,
+        'suits': suits,
+        'cart': session_cart
+    })
 
 def get_session_cart(request):
     session_cart = get_cart(request.session)
@@ -19,37 +47,69 @@ def get_session_cart(request):
         return JsonResponse({"cart": session_cart})
 
 def add_to_cart(request):
-
     product_id = int(request.POST['product_id'])
+    size = request.POST.get('size', '')  # Get size if provided
     qty = int(request.POST.get('qty', 1))
 
     product = Products.objects.get(pk=product_id)
     unit_price = product.price
 
+    # If size is provided, check stock in ProductSize
+    if size:
+        try:
+            product_size = ProductSize.objects.get(product_id=product_id, size=size)
+            if product_size.stock_count < qty:
+                return JsonResponse({"ok": False, "error": f"Only {product_size.stock_count} items available in size {size}"})
+        except ProductSize.DoesNotExist:
+            return JsonResponse({"ok": False, "error": "This size is not available"})
+
     cart = get_cart(request.session)
 
+    # Create unique cart item identifier (include size if present)
+    cart_item_key = f"{product_id}_{size}" if size else str(product_id)
+
     for item in cart['items']:
-        if item['product_id'] == product_id:
+        # Check both product_id and size for existing items
+        existing_key = f"{item['product_id']}_{item.get('size', '')}" if item.get('size') else str(item['product_id'])
+        if existing_key == cart_item_key:
             item['qty'] += qty
             save_cart(request.session, cart)
             return JsonResponse({"ok": True, "cart": cart})
-        
-    cart["items"].append({
+    
+    # Create new cart item
+    cart_item = {
         "product_id": product_id,
         "name": product.name,
         "qty": qty,
         "unit_price": str(unit_price),
         "image_url": product.image.url if product.image else "",
-    })
+    }
+    
+    # Add size info if provided
+    if size:
+        cart_item["size"] = size
+        try:
+            product_size = ProductSize.objects.get(product_id=product_id, size=size)
+            cart_item["size_display"] = product_size.get_size_display()
+        except ProductSize.DoesNotExist:
+            cart_item["size_display"] = size
+        
+    cart["items"].append(cart_item)
     save_cart(request.session, cart)
     return JsonResponse({"ok": True, "cart": cart})
 
 def remove_from_cart(request):
     product_id = int(request.POST['product_id'])
+    size = request.POST.get('size', '')  # Get size if provided
     cart = get_cart(request.session)
 
+    # Create the same cart item key used in add_to_cart
+    cart_item_key = f"{product_id}_{size}" if size else str(product_id)
+
     for item in cart['items']:
-        if item['product_id'] == product_id:
+        # Check both product_id and size for the item to remove
+        existing_key = f"{item['product_id']}_{item.get('size', '')}" if item.get('size') else str(item['product_id'])
+        if existing_key == cart_item_key:
             item['qty'] -= 1
             if item['qty'] <= 0:
                 cart['items'].remove(item)
@@ -106,12 +166,43 @@ def place_order(request):
                 # Create order items
                 for item in cart['items']:
                     product = Products.objects.get(pk=item['product_id'])
-                    OrderItem.objects.create(
-                        order=order,
-                        product=product,
-                        quantity=item['qty'],
-                        price=int(float(item['unit_price']))
-                    )
+                    
+                    # Handle sized products
+                    if item.get('size'):
+                        # Check and update stock for sized products
+                        product_size = ProductSize.objects.select_for_update().get(
+                            product=product, size=item['size']
+                        )
+                        if product_size.stock_count < item['qty']:
+                            raise Exception(f"Not enough stock for {product.name} in size {item['size']}")
+                        
+                        # Create order item with size
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            size=item['size'],  # Add size to OrderItem
+                            quantity=item['qty'],
+                            price=int(float(item['unit_price']))
+                        )
+                        
+                        # Reduce stock count
+                        product_size.stock_count -= item['qty']
+                        product_size.save()
+                        
+                    else:
+                        # Handle non-sized products (your existing logic)
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=item['qty'],
+                            price=int(float(item['unit_price']))
+                        )
+                        # Keep your existing stock logic for non-sized products
+                        if hasattr(product, 'stock_count'):
+                            product.stock_count -= item['qty']
+                            if product.stock_count == 0:
+                                product.in_stock = False
+                            product.save()
                 
                 # Clear the cart after successful order
                 request.session['cart'] = {'items': []}
@@ -124,7 +215,7 @@ def place_order(request):
                 return redirect('order_success', order_number=order.order_number)
                 
         except Exception as e:
-            messages.error(request, 'An error occurred while placing your order. Please try again.', e)
+            messages.error(request, 'An error occurred while placing your order. Please try again.')
             return redirect('checkout')
     
     # If not POST, redirect to checkout
@@ -139,5 +230,3 @@ def order_success(request, order_number):
     except Order.DoesNotExist:
         messages.error(request, 'Order not found.')
         return redirect('home')
-    
-

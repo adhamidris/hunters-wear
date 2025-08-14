@@ -19,7 +19,7 @@ class Products(models.Model):
     price = models.IntegerField(null=True, blank=True)
     compare_price = models.IntegerField(null=True, blank=True)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
-    classification = models.CharField(choices=classifications)
+    classification = models.CharField(choices=classifications, max_length=12)
     best_seller = models.BooleanField(default=False, null=True, blank=True)
 
     def __str__(self):
@@ -47,7 +47,7 @@ class ProductSize(models.Model):
     ]
 
     product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='productsizes')
-    size = models.CharField(max_length=3, choices=SIZE_CHOICES)
+    size = models.CharField(max_length=12, choices=SIZE_CHOICES)
     stock_count = models.IntegerField(default=0)
 
     class Meta:
